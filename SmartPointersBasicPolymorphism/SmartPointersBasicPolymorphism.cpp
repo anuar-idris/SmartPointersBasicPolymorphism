@@ -5,87 +5,128 @@
 #include <memory>
 #include <vector>
 
-class Base
+//Animal class is an interface
+class Animal
 {
 public:
 
-    virtual void SayHello()
-    {
-        std::cout << "Hello from Base.\n";
-    }
+    virtual void SayHello() = 0;
 
+    virtual ~Animal()
+    {
+        std::cout << "Destructor from Animal.\n";
+    }
 };
 
-class Derived : public Base
+class Rabbit : public Animal
 {
 public:
     void SayHello() override
     {
-        std::cout << "Hello from Derived.\n";
+        std::cout << "Hello from Rabbit.\n";
+    }
+
+    virtual ~Rabbit()
+    {
+        std::cout << "Destructor from Rabbit.\n";
+    }
+};
+
+class Cat : public Animal
+{
+public:
+    void SayHello() override
+    {
+        std::cout << "Hello from Cat.\n";
+    }
+
+    virtual ~Cat()
+    {
+        std::cout << "Destructor from Cat.\n";
     }
 };
 
 //Class to hold container
 class MyCompositeClass {
 
-public:
-    MyCompositeClass(std::initializer_list<int> init_list) :
-        m_Vec(init_list.begin(), init_list.end()),
-        m_size(m_Vec.size()) 
-    { 
-    
-    }
+private:
+    //This vector accepts pointer type of Animal class
+    std::vector < std::shared_ptr<Animal>> m_Vec;
+    int m_size;
 
-    void Movement()
+public:
+    MyCompositeClass() = default;
+    MyCompositeClass(const MyCompositeClass&) = delete;
+    MyCompositeClass(MyCompositeClass&&) = delete;
+    MyCompositeClass& operator=(const MyCompositeClass&) = delete;
+    MyCompositeClass& operator=(MyCompositeClass&&) = delete;
+
+    virtual ~MyCompositeClass()
     {
-        for (auto itm : m_Vec) {
-            std::cout << "Got item: " << itm << "\n";
-        }    
+        DeleteVector();
     }
 
     void DeleteVector()
     {
+        //iterate all item inside vector and delete the pointer
+        std::cout << "DeleteVector.\n";
         m_Vec.clear();
     }
 
-private:
-    std::vector<int> m_Vec;
-    int m_size;
+    void SayHello()
+    {
+        for (auto& itm : m_Vec) {
+            itm->SayHello();
+        }
+    }
+
+    void AnotherSharedPointer()
+    {
+        //declared a shared pointer
+        std::shared_ptr<Animal> ptrDerive(new Rabbit());
+
+        //create a vector to hold the shared pointer
+        std::vector<std::shared_ptr<Animal> > test;
+
+        //move/cut and paste shared pointer to the vector
+        //using std::move will take out pointer from source but retain and destination
+        test.push_back(std::move(ptrDerive));
+
+        //handle the shared pointer
+        for (auto& itm : test) {
+            itm->SayHello();
+        }
+
+        //delete the vector, will delete the pointer a well
+        test.clear();
+    }
+
+    void run()
+    {
+        //create smart pointers Animald on derive class
+        auto pRabbit = std::make_shared<Rabbit>();
+        auto pCat = std::make_shared<Cat>();
+
+        //Store those smart pointers in the vector of shared pointers
+        //the same like copy pointers, not cut and paste
+        m_Vec.push_back(pRabbit);
+        m_Vec.push_back(pCat);
+
+        // All pointers to Rabbit share ownership
+        std::cout << "Pointers to underlying Rabbit: "
+            << pRabbit.use_count()
+            << "\n";
+
+        SayHello();
+    }
 };
 
 int main()
 {
     std::cout << "Hello World!\n";
 
-    auto pBase = std::make_shared<Base>();
-    pBase->SayHello();
-
-    auto pDerived = std::make_shared<Derived>();
-    pDerived->SayHello();
-
-
-
-    // static_pointer_cast to go up class hierarchy
-    pBase = std::static_pointer_cast<Base>(pDerived);
-    pBase->SayHello();
-
-    // dynamic_pointer_cast to go down/across class hierarchy
-    auto newdowncastedPtr = std::dynamic_pointer_cast<Derived>(pBase);
-    if (newdowncastedPtr)
-    {
-        std::cout << "Downcasted pointer says: ";
-        newdowncastedPtr->SayHello();
-    }
-
-    // All pointers to derived share ownership
-    std::cout << "Pointers to underlying derived: "
-        << pDerived.use_count()
-        << "\n";
-
-    MyCompositeClass m = { 1,2,3,4 };
-    m.Movement();
-    m.DeleteVector();
-
+    MyCompositeClass mc;
+    mc.run();
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
