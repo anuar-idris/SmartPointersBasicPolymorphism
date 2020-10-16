@@ -53,6 +53,9 @@ private:
     //This vector accepts pointer type of Animal class
     std::vector < std::shared_ptr<Animal>> m_Vec;
     int m_size;
+    //declare member variable for these pointers
+    std::shared_ptr<Animal> pRabbit;
+    std::shared_ptr<Animal> pCat;
 
 public:
     MyCompositeClass() = default;
@@ -104,8 +107,8 @@ public:
     void run()
     {
         //create smart pointers Animald on derive class
-        auto pRabbit = std::make_shared<Rabbit>();
-        auto pCat = std::make_shared<Cat>();
+        pRabbit = std::make_shared<Rabbit>();
+        pCat = std::make_shared<Cat>();
 
         //Store those smart pointers in the vector of shared pointers
         //the same like copy pointers, not cut and paste
