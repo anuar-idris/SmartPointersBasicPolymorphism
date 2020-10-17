@@ -1,6 +1,9 @@
 // SmartPointersBasicPolymorphism.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -83,6 +86,21 @@ public:
         }
     }
 
+    void CreateSmartPointer()
+    {
+        //create smart pointers
+        pRabbit = std::make_shared<Rabbit>();
+        pCat = std::make_shared<Cat>();
+    }
+
+    void StoreSmartPointer()
+    {
+        //Store those smart pointers in the vector of shared pointers
+        //the same like copy pointers, not cut and paste
+        m_Vec.push_back(pRabbit);
+        m_Vec.push_back(pCat);
+    }
+
     void AnotherSharedPointer()
     {
         //declared a shared pointer
@@ -106,30 +124,43 @@ public:
 
     void run()
     {
-        //create smart pointers Animald on derive class
-        pRabbit = std::make_shared<Rabbit>();
-        pCat = std::make_shared<Cat>();
+        std::cout << "Pointers to underlying Rabbit: "
+            << pRabbit.use_count() << " Address: " << &pRabbit 
+            << " Pointers to underlying Cat: "
+            << pCat.use_count() << " Address: " << &pCat
+            << "\n";
 
-        //Store those smart pointers in the vector of shared pointers
-        //the same like copy pointers, not cut and paste
-        m_Vec.push_back(pRabbit);
-        m_Vec.push_back(pCat);
+        CreateSmartPointer();
+
+        std::cout << "Pointers to underlying Rabbit: "
+            << pRabbit.use_count() << " Address: " << &pRabbit
+            << " Pointers to underlying Cat: "
+            << pCat.use_count() << " Address: " << &pCat
+            << "\n";
+
+        StoreSmartPointer();
 
         // All pointers to Rabbit share ownership
         std::cout << "Pointers to underlying Rabbit: "
-            << pRabbit.use_count()
+            << pRabbit.use_count() << " Address: " << &pRabbit
+            << " Pointers to underlying Cat: "
+            << pCat.use_count() << " Address: " << &pCat
             << "\n";
-
-        SayHello();
     }
 };
 
 int main()
 {
+    //method to detect memory leaks. If we are not sure which is the exit
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     std::cout << "Hello World!\n";
 
     MyCompositeClass mc;
     mc.run();
+    mc.SayHello();
+    
+    //method to detect memory leaks. Only if we certain only one exit
+    //_CrtDumpMemoryLeaks();
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
